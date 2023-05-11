@@ -1,16 +1,21 @@
-import os
+from typing import Tuple
 
-from flask import Flask
+from flask import Flask, jsonify, Response
+from marshmallow import ValidationError
+
+from views.request import request_bp
 
 app = Flask(__name__)
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "data")
+app.register_blueprint(request_bp)
 
 
-@app.post("/perform_query")
-def perform_query():
-    # нужно взять код из предыдущего ДЗ
-    # добавить команду regex
-    # добавить типизацию в проект, чтобы проходила утилиту mypy app.py
-    return app.response_class('', content_type="text/plain")
+@app.errorhandler(ValidationError)
+def validation_error(err: ValidationError) -> Tuple[Response, int]:
+    """
+    Функция перехвата ошибки валидации запроса пользователя
+    """
+    return jsonify(err.messages), 400
+
+
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', port=5000, debug=True)
